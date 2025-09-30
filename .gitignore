@@ -1,1 +1,1 @@
-"__pycache__/\n*.pyc\n\n# Virtual Environment\nvenv/\n.venv/\n\n# IDE configuration\n.vscode/\n\n# Environment variables\n.env\n"
+"__pycache__/\n*.pyc\n\n# Virtual Environment\nvenv/\n.venv/\n\n# IDE configuration\n.vscode/\n.idea/\n\n# Testing\n.pytest_cache/\n\n# Environment variables\n.env\n"

@@ -1,1 +1,24 @@
-"__pycache__/\n*.pyc\n\n# Virtual Environment\nvenv/\n.venv/\n\n# IDE configuration\n.vscode/\n.idea/\n\n# Testing\n.pytest_cache/\n\n# Environment variables\n.env\n\n# Distribution / packaging\nbuild/\ndist/\n*.egg-info/\n"
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# IDE configuration
+.vscode/
+.idea/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/

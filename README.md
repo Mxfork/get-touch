@@ -2,7 +2,7 @@
 
 This repository contains a comprehensive Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for watching for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
 
-This script is designed as a simulation for educational and architectural demonstration purposes. It does not send real transactions but follows the logic required for a production-grade relayer.
+This script is an educational tool designed to demonstrate the architecture of a relayer. It simulates the necessary logic without sending real transactions, making it safe for experimentation and development.
 
 ## Concept
 
@@ -11,10 +11,10 @@ Cross-chain bridges are essential for blockchain interoperability, allowing asse
 1.  **Lock**: A user locks their assets (e.g., ETH) in a smart contract on the source chain (e.g., Ethereum).
 2.  **Event Emission**: The source chain contract emits an event (`TokensLocked`) containing details like the recipient's address on the destination chain and the amount.
 3.  **Listen & Relay**: Off-chain services, known as "relayers" or "validators," constantly listen for these events.
-4.  **Verification & Mint**: Upon detecting a valid `TokensLocked` event, a relayer submits a transaction to a smart contract on the destination chain (e.g., Polygon). This transaction proves the lock event occurred.
+4.  **Verification**: Upon detecting a valid `TokensLocked` event, a relayer submits a transaction to a smart contract on the destination chain (e.g., Polygon). This transaction proves the lock event occurred.
 5.  **Mint**: The destination chain contract verifies the proof and mints a corresponding amount of a wrapped asset (e.g., WETH) to the recipient.
 
-This script simulates the critical **Step 3 and 4**, acting as the relayer node.
+This script simulates the critical **Steps 3 and 4** of this process, acting as the off-chain relayer node.
 
 ## Code Architecture
 
@@ -28,7 +28,7 @@ The script is designed with a modular, object-oriented approach to separate conc
 +-----------v-----------+
 |      BridgeRelayer    |  (Core logic, state management, transaction simulation)
 +-----------+-----------+
-            |           | 
+            |           |
 +-----------v-----------+     +-----------------------+
 |      EventScanner     |----->| BlockchainConnector   | (Manages Web3 connection)
 +-----------------------+     | (Source Chain)        | (Handles contract interaction)
@@ -44,14 +44,14 @@ The script is designed with a modular, object-oriented approach to separate conc
 +-----------------------+
 ```
 
-*   `BlockchainConnector`: A reusable class that manages the connection to a single blockchain node via its RPC URL. It uses `web3.py` for blockchain interaction and `requests` for initial health checks.
+*   `BlockchainConnector`: A reusable class that manages the connection to a single blockchain node via its RPC URL. It uses `web3.py` for blockchain interaction.
 *   `EventScanner`: Responsible for scanning a specified range of blocks on the source chain for a particular event (e.g., `TokensLocked`). It handles potential RPC node limitations by querying in smaller chunks.
-*   `BridgeRelayer`: The main orchestrator. It contains the primary execution loop. It uses the `EventScanner` to find new events, manages state to avoid re-processing events (replay protection), and simulates crafting, signing, and sending transactions to the destination chain.
+*   `BridgeRelayer`: The main orchestrator. It contains the primary execution loop. It uses the `EventScanner` to find new events, manages state to avoid re-processing events (replay protection), and simulates crafting and signing transactions for the destination chain.
 *   `main.py` (Script Body): The entry point that loads configuration from the `.env` file, initializes all the necessary objects, and starts the relayer's main loop.
 
 ## How it Works
 
-The relayer operates in a continuous loop with the following steps:
+The relayer operates in a continuous loop, performing the following steps:
 
 1.  **Initialization**: The script starts by loading all necessary configuration from the `.env` file, including RPC URLs, contract addresses, and the relayer's private key.
 2.  **Connection**: It instantiates two `BlockchainConnector` objects, one for the source chain and one for the destination chain, establishing and verifying the connections.
@@ -68,14 +68,14 @@ The relayer operates in a continuous loop with the following steps:
 
 Error handling is included for connection issues and other potential exceptions to ensure the relayer is resilient.
 
-## Usage Example
+## Getting Started
 
-### 1. Prerequisites
+### 1. Requirements
 
 *   Python 3.8+
 *   Access to RPC endpoints for two Ethereum-compatible chains (e.g., using Infura, Alchemy, or a local node). For this example, we can use public testnet RPCs like Sepolia and Mumbai.
 
-### 2. Setup
+### 2. Installation
 
 ```bash
 # Clone the repository
@@ -90,10 +90,11 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
-### 3. Configuration
+### 3. Configure Environment Variables
 
 Create a file named `.env` in the root of the project and populate it with your specific details. **Do not commit this file to version control.**
 
+Here is an example `.env` file structure:
 ```env
 # .env file example
 
@@ -109,27 +110,27 @@ SOURCE_BRIDGE_CONTRACT_ADDRESS="0x..."
 # Address of the bridge contract on the destination chain
 DESTINATION_BRIDGE_CONTRACT_ADDRESS="0x..."
 
-# Private key of the relayer account (DO NOT USE A KEY WITH REAL FUNDS)
-# This account needs funds on the destination chain to pay for gas.
+# Private key of the relayer's wallet.
+# IMPORTANT: Use a dedicated account with test funds only.
+# This account requires a small balance on the destination chain to pay for gas fees.
 RELAYER_PRIVATE_KEY="0x..."
 
 # The block number from which to start scanning on the source chain.
 # Set this to the block number when the contract was deployed, or a recent block.
 START_BLOCK="1234567"
-
 ```
 
-### 4. Running the Script
+### 4. Run the Relayer
 
 Execute the script from your terminal:
 
 ```bash
-python script.py
+python main.py
 ```
 
-### 5. Expected Output
+### 5. Monitor the Output
 
-The script will start logging its activities to the console and to a `bridge_listener.log` file. You will see output similar to the following as it scans blocks and processes events.
+The script will start logging its activities to the console and to a `bridge_relayer.log` file. You will see output similar to the following as it scans blocks and processes events.
 
 ```
 2023-10-27 10:30:00,123 - INFO - main - --- Initializing Bridge Components ---

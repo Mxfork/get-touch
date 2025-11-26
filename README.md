@@ -1,6 +1,6 @@
 # get-touch: A Cross-Chain Bridge Event Listener Simulation
 
-This repository contains a comprehensive Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for listening for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
+This repository contains a detailed Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for listening for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
 
 This script is an educational tool designed to demonstrate the architecture of a relayer. It simulates the necessary logic without sending real transactions, making it safe for experimentation and development.
 
@@ -55,7 +55,7 @@ The relayer operates in a continuous loop, performing the following steps:
 
 1.  **Initialization**: The script starts by loading configuration from the `.env` file (RPC URLs, contract addresses, relayer's private key) and the contract ABIs.
 2.  **Connection**: It instantiates two `BlockchainConnector` objects, one for the source chain and one for the destination chain, establishing and verifying the connections.
-3.  **Looping**: The `BridgeRelayer` enters its main `run()` loop.
+3.  **Loop**: The `BridgeRelayer` enters its main `run()` loop.
 4.  **Block Range Calculation**: In each iteration, it fetches the latest block number from the source chain. It calculates the range of blocks to scan, starting from the last block it processed and ending at `latest_block - REORG_SAFETY_MARGIN`. This margin ensures it only processes blocks that are unlikely to be part of a chain reorganization.
 5.  **Event Scanning**: It calls the `EventScanner` to query the source chain's bridge contract for `TokensLocked` events within the calculated block range.
 6.  **Event Processing**: If new events are found, they are sorted by block number to ensure correct order. For each event:
@@ -93,7 +93,7 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment Variables
 
-Create a file named `.env` in the project's root directory to store your configuration. The script uses this file to load settings as environment variables. **Do not commit this file to version control.**
+Create a file named `.env` in the project's root directory. The script uses this file to load sensitive configuration. **It is critical that you do not commit this file to version control.**
 
 Here is an example `.env` template:
 ```env
@@ -123,9 +123,13 @@ START_BLOCK="1234567"
 
 ### 4. Run the Relayer
 
-Execute the script from your terminal:
+Once your `.env` file is configured, you can execute the script from your terminal.
 
 ```bash
+# Ensure your virtual environment is activated
+source venv/bin/activate
+
+# Run the main script
 python main.py
 ```
 

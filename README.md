@@ -1,8 +1,8 @@
 # get-touch: A Cross-Chain Bridge Event Listener Simulation
 
-This repository contains a detailed Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for listening for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
+This project is a Python-based simulation of a core component in a cross-chain bridge: the event listener and relayer. This component is responsible for listening for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
 
-This script is an educational tool designed to demonstrate the architecture of a relayer. It simulates the necessary logic without sending real transactions, making it safe for experimentation and development.
+This script is an educational tool designed to demonstrate a relayer's architecture. It simulates the necessary logic without sending real transactions, making it safe for experimentation and development.
 
 ## Concept
 
@@ -11,7 +11,7 @@ Cross-chain bridges are essential for blockchain interoperability, allowing asse
 1.  **Lock**: A user locks their assets (e.g., ETH) in a smart contract on the source chain (e.g., Ethereum).
 2.  **Event Emission**: The source chain contract emits an event (`TokensLocked`) containing details like the recipient's address on the destination chain and the amount.
 3.  **Listen & Relay**: Off-chain services, known as "relayers" or "validators," constantly listen for these events.
-4.  **Verification**: Upon detecting a valid `TokensLocked` event, a relayer submits a transaction to a smart contract on the destination chain (e.g., Polygon). This transaction proves the lock event occurred.
+4.  **Verification**: Upon detecting a valid `TokensLocked` event, a relayer submits a transaction to a smart contract on the destination chain (e.g., Polygon) that proves the lock event occurred.
 5.  **Mint**: The destination chain contract verifies the proof and mints a corresponding amount of a wrapped asset (e.g., WETH) to the recipient.
 
 This script simulates the critical **Steps 3 and 4** of this process, acting as the off-chain relayer node.
@@ -44,24 +44,42 @@ The script is designed with a modular, object-oriented approach to separate conc
 +-----------------------+
 ```
 
-*   `BlockchainConnector`: A reusable class that manages the connection to a single blockchain node via its RPC URL. It uses `web3.py` for blockchain interaction.
-*   `EventScanner`: Responsible for scanning a specified range of blocks on the source chain for a particular event (e.g., `TokensLocked`). It handles potential RPC node limitations by querying in smaller chunks.
-*   `BridgeRelayer`: The main orchestrator. It contains the primary execution loop. It uses the `EventScanner` to find new events, manages state to avoid re-processing events (replay protection), and simulates crafting and signing transactions for the destination chain.
-*   `main.py` (Script Body): The entry point that loads configuration from the `.env` file, initializes all the necessary objects, and starts the relayer's main loop.
+*   `BlockchainConnector`: A reusable class that manages the `web3.py` connection to a blockchain node via an RPC URL.
+*   `EventScanner`: Scans block ranges on the source chain for a specific event (e.g., `TokensLocked`), handling RPC node limitations by querying in small chunks.
+*   `BridgeRelayer`: The main orchestrator. It runs the primary execution loop, using the `EventScanner` to find new events, managing state to prevent re-processing (replay protection), and simulating the creation and signing of transactions for the destination chain.
+*   `main.py`: The script's entry point. It loads configuration from `.env`, initializes the required objects, and starts the relayer's main loop.
 
-## How it Works
+### Component Usage Example
+
+Here is a small example of how the `BlockchainConnector` can be used independently to connect to a node.
+
+```python
+# Example: Connecting to a blockchain
+from blockchain_connector import BlockchainConnector
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# Assumes SOURCE_CHAIN_RPC_URL is set in your .env file
+sepolia_rpc = os.getenv("SOURCE_CHAIN_RPC_URL")
+connector = BlockchainConnector(rpc_url=sepolia_rpc)
+print(f"Successfully connected to chain ID: {connector.w3.eth.chain_id}")
+```
+
+## How It Works
 
 The relayer operates in a continuous loop, performing the following steps:
 
 1.  **Initialization**: The script starts by loading configuration from the `.env` file (RPC URLs, contract addresses, relayer's private key) and the contract ABIs.
-2.  **Connection**: It instantiates two `BlockchainConnector` objects, one for the source chain and one for the destination chain, establishing and verifying the connections.
+2.  **Connection**: It instantiates two `BlockchainConnector` objects—one for the source chain and one for the destination chain—and verifies the connections.
 3.  **Loop**: The `BridgeRelayer` enters its main `run()` loop.
 4.  **Block Range Calculation**: In each iteration, it fetches the latest block number from the source chain. It calculates the range of blocks to scan, starting from the last block it processed and ending at `latest_block - REORG_SAFETY_MARGIN`. This margin ensures it only processes blocks that are unlikely to be part of a chain reorganization.
 5.  **Event Scanning**: It calls the `EventScanner` to query the source chain's bridge contract for `TokensLocked` events within the calculated block range.
-6.  **Event Processing**: If new events are found, they are sorted by block number to ensure correct order. For each event:
+6.  **Event Processing**: If new events are found, they are sorted by block number for correct processing order. For each event:
     *   It decodes the event data (recipient, amount, nonce).
     *   It checks its internal state (`processed_nonces`) to ensure this event hasn't been relayed before.
-    *   It simulates building and signing a `mintTokens` transaction for the destination chain using the relayer's private key.
+    *   It simulates creating and signing a `mintTokens` transaction for the destination chain using the relayer's private key.
     *   It logs the simulated transaction details.
 7.  **State Update**: After processing the events in a batch, it updates `last_processed_block` to the end of the scanned range.
 8.  **Polling**: The script then waits for a configured poll interval (e.g., 15 seconds) before starting the next iteration.
@@ -73,7 +91,7 @@ Error handling is included for connection issues and other potential exceptions 
 ### 1. Requirements
 
 *   Python 3.8+
-*   Access to RPC endpoints for two Ethereum-compatible chains (e.g., using Infura, Alchemy, or a local node). For this example, we can use public testnet RPCs like Sepolia and Mumbai.
+*   Access to RPC endpoints for two Ethereum-compatible chains (e.g., using Infura, Alchemy, or a local node). For this simulation, we can use public testnet RPCs like Sepolia and Mumbai.
 *   Contract ABIs (in JSON format) for the source and destination bridge contracts.
 
 ### 2. Installation
@@ -93,7 +111,7 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment Variables
 
-Create a file named `.env` in the project's root directory. The script uses this file to load sensitive configuration. **It is critical that you do not commit this file to version control.**
+Create a file named `.env` in the project's root directory. The script uses this file to load sensitive data like private keys and RPC URLs. **It is critical that you do not commit this file to version control.**
 
 Here is an example `.env` template:
 ```env

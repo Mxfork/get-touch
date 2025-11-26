@@ -1,6 +1,6 @@
 # get-touch: A Cross-Chain Bridge Event Listener Simulation
 
-This repository contains a comprehensive Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for watching for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
+This repository contains a comprehensive Python script that simulates the core component of a cross-chain bridge: the event listener and relayer. This component is responsible for listening for specific events on a source blockchain (e.g., users locking tokens) and relaying that information to a destination blockchain to complete the cross-chain action (e.g., minting wrapped tokens).
 
 This script is an educational tool designed to demonstrate the architecture of a relayer. It simulates the necessary logic without sending real transactions, making it safe for experimentation and development.
 
@@ -53,7 +53,7 @@ The script is designed with a modular, object-oriented approach to separate conc
 
 The relayer operates in a continuous loop, performing the following steps:
 
-1.  **Initialization**: The script starts by loading all necessary configuration from the `.env` file, including RPC URLs, contract addresses, and the relayer's private key.
+1.  **Initialization**: The script starts by loading configuration from the `.env` file (RPC URLs, contract addresses, relayer's private key) and the contract ABIs.
 2.  **Connection**: It instantiates two `BlockchainConnector` objects, one for the source chain and one for the destination chain, establishing and verifying the connections.
 3.  **Looping**: The `BridgeRelayer` enters its main `run()` loop.
 4.  **Block Range Calculation**: In each iteration, it fetches the latest block number from the source chain. It calculates the range of blocks to scan, starting from the last block it processed and ending at `latest_block - REORG_SAFETY_MARGIN`. This margin ensures it only processes blocks that are unlikely to be part of a chain reorganization.
@@ -74,6 +74,7 @@ Error handling is included for connection issues and other potential exceptions 
 
 *   Python 3.8+
 *   Access to RPC endpoints for two Ethereum-compatible chains (e.g., using Infura, Alchemy, or a local node). For this example, we can use public testnet RPCs like Sepolia and Mumbai.
+*   Contract ABIs (in JSON format) for the source and destination bridge contracts.
 
 ### 2. Installation
 
@@ -92,9 +93,9 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment Variables
 
-Create a file named `.env` in the root of the project and populate it with your specific details. **Do not commit this file to version control.**
+Create a file named `.env` in the project's root directory to store your configuration. The script uses this file to load settings as environment variables. **Do not commit this file to version control.**
 
-Here is an example `.env` file structure:
+Here is an example `.env` template:
 ```env
 # .env file example
 
